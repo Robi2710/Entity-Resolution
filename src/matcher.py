@@ -2,7 +2,7 @@ from rapidfuzz import fuzz
 import pandas as pd
 import re
 
-# Funcția de preprocesare
+# funcția de preprocesare
 def preprocess_text(text):
     if pd.isna(text):
         return ""
@@ -12,7 +12,7 @@ def preprocess_text(text):
     return text.strip()
 
 def preprocess_dataframe(df):
-    # Coloane relevante pentru deduplicare
+    # coloane relevante pentru deduplicare, alese in functie de nivelul lor de completare
     relevant_cols = [
         'company_name',
         'company_commercial_names',
@@ -23,7 +23,7 @@ def preprocess_dataframe(df):
     ]
     df = df[relevant_cols].fillna('')
 
-    # Aplicăm preprocesarea
+    # preprocesare
     df['company_name'] = df['company_name'].apply(preprocess_text)
     df['company_commercial_names'] = df['company_commercial_names'].apply(
         lambda x: [preprocess_text(name) for name in x] if isinstance(x, list) else [])
@@ -34,40 +34,33 @@ def preprocess_dataframe(df):
 
     return df
 
-# Citim datele
 df = pd.read_parquet('../veridion_entity_resolution_challenge.snappy.parquet', engine='pyarrow')
 
-# Aplicăm preprocesarea
 df = preprocess_dataframe(df)
 
 visited = set()
 groups = []
 threshold = 60  # prag de similaritate
 
-# Funcția de scor între două rânduri
+# functia de scor între două rânduri
 def similarity_score(row1, row2):
     score = 0
 
-    # Comparare website_domain
     if row1['website_domain'] and row2['website_domain'] == row1['website_domain']:
         score += 50
 
-    # Comparare nume companie
     name_score = fuzz.token_set_ratio(row1['company_name'], row2['company_name'])
     if name_score > 90:
         score += 30
     elif name_score > 80:
         score += 15
 
-    # Comparare email
     if row1['primary_email'] and row2['primary_email'] == row1['primary_email']:
         score += 10
 
-    # Comparare telefon
     if row1['primary_phone'] and row2['primary_phone'] == row1['primary_phone']:
         score += 5
 
-    # Comparare adresă
     addr_score = fuzz.token_set_ratio(row1['main_address_raw_text'], row2['main_address_raw_text'])
     if addr_score > 85:
         score += 5
@@ -76,7 +69,7 @@ def similarity_score(row1, row2):
 
     return score
 
-# Grupăm după website_domain
+# grupare după website_domain
 for _, group_df in df.groupby('website_domain'):
     indices = group_df.index.tolist()
     for i in range(len(indices)):
@@ -94,7 +87,7 @@ for _, group_df in df.groupby('website_domain'):
                 visited.add(idx_j)
         groups.append(group)
 
-# Construim rezultatul
+# rezultatul final
 results = []
 for group_id, group in enumerate(groups):
     for idx in group:
