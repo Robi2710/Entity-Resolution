@@ -1,43 +1,44 @@
+from rapidfuzz import fuzz
 import pandas as pd
-from fuzzywuzzy import fuzz
-from collections import defaultdict
-from preprocess import preprocess_dataframe  # <- Funcția ta de preprocess
 
-# Încarcă și preprocesează datele
+# Citim datele
 df = pd.read_parquet('../veridion_entity_resolution_challenge.snappy.parquet', engine='pyarrow')
-df = preprocess_dataframe(df)
+
+# Coloane utile și cu completitudine rezonabilă
+cols = [
+    'company_name',
+    'company_commercial_names',
+    'website_domain',
+    'primary_email',
+    'primary_phone',
+    'main_address_raw_text'
+]
+
+df = df[cols].fillna('')
+df = df.astype(str).apply(lambda x: x.str.lower())
 
 visited = set()
 groups = []
 threshold = 60  # prag de similaritate
 
-# Funcție de scor între două rânduri
 def similarity_score(row1, row2):
     score = 0
 
-    # Domenii comune
-    if set(row1['all_domains_combined']) & set(row2['all_domains_combined']):
+    if row1['website_domain'] and row2['website_domain'] == row1['website_domain']:
         score += 50
 
-    # Similaritate pe nume
-    max_name_score = max(
-        (fuzz.token_set_ratio(n1, n2) for n1 in row1['all_names'] for n2 in row2['all_names']),
-        default=0
-    )
-    if max_name_score > 90:
+    name_score = fuzz.token_set_ratio(row1['company_name'], row2['company_name'])
+    if name_score > 90:
         score += 30
-    elif max_name_score > 80:
+    elif name_score > 80:
         score += 15
 
-    # Email exact
-    if row1['primary_email'] and row1['primary_email'] == row2['primary_email']:
+    if row1['primary_email'] and row2['primary_email'] == row1['primary_email']:
         score += 10
 
-    # Telefon exact
-    if row1['primary_phone'] and row1['primary_phone'] == row2['primary_phone']:
+    if row1['primary_phone'] and row2['primary_phone'] == row1['primary_phone']:
         score += 5
 
-    # Adresă similară
     addr_score = fuzz.token_set_ratio(row1['main_address_raw_text'], row2['main_address_raw_text'])
     if addr_score > 85:
         score += 5
@@ -46,21 +47,16 @@ def similarity_score(row1, row2):
 
     return score
 
-# Blocking simplu pe prima literă din website_domain
-buckets = defaultdict(list)
-for idx, row in df.iterrows():
-    key = row['website_domain'][:1] if row['website_domain'] else ''
-    buckets[key].append(idx)
-
-# Grupare
-for bucket in buckets.values():
-    for i in range(len(bucket)):
-        idx_i = bucket[i]
+# Grupăm după website_domain
+for _, group_df in df.groupby('website_domain'):
+    indices = group_df.index.tolist()
+    for i in range(len(indices)):
+        idx_i = indices[i]
         if idx_i in visited:
             continue
         group = [idx_i]
-        for j in range(i + 1, len(bucket)):
-            idx_j = bucket[j]
+        for j in range(i + 1, len(indices)):
+            idx_j = indices[j]
             if idx_j in visited:
                 continue
             score = similarity_score(df.loc[idx_i], df.loc[idx_j])
@@ -69,7 +65,7 @@ for bucket in buckets.values():
                 visited.add(idx_j)
         groups.append(group)
 
-# Output final
+# Construim rezultatul
 results = []
 for group_id, group in enumerate(groups):
     for idx in group:
