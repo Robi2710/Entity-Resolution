@@ -1,41 +1,36 @@
 # 📁 Entity Resolution
+
 ## 🎯 Obiectiv principal
-Obiectivul principal a fost identificarea și gruparea companiilor duplicate, folosind un algoritm bazat pe similaritatea textuală și reguli euristice aplicate pe coloane esențiale precum nume, domeniu, email, telefon și adresă.
+Obiectivul principal a fost identificarea si gruparea companiilor duplicate, folosind un algoritm bazat pe similaritatea textuala si reguli euristice aplicate pe coloane esentiale precum nume, domeniu, email, telefon si adresa.
 
-## 🧠 Gândirea din spatele soluției
+## 🧠 Gandirea din spatele solutiei
+
 ### 1. Explorare initiala
-Primul pas a fost să înțeleg structura datelor, așa că am creat scriptul file_reader.py pentru a vedea mai usor coloane si informatii desprea acestea, iar apoi am creat scriptul data_completeness.py, care afișează gradul de completitudine al fiecărei coloane. Acest pas m-a ajutat să decid ce coloane sunt utile pentru procesul de deduplicare.
+Primul pas a fost sa inteleg structura datelor, asa ca am creat scriptul `file_reader.py` pentru a vedea mai usor coloane si informatii despre acestea, iar apoi am creat scriptul `data_completeness.py`, care afiseaza gradul de completitudine al fiecarei coloane. Acest pas m-a ajutat sa decid ce coloane sunt utile pentru procesul de deduplicare.
+
 ### 2. Experimentare pe subset
-Am creat apoi un fișier mic — mini_example.py — pentru a testa o logică simplificată pe un subset de date. A fost ideal pentru a înțelege comportamentul funcției de similaritate și cum să structurez logica de grupare.
-### 3. Prelucrarea și deduplicarea
+Am creat apoi un fisier mic — `mini_example.py` — pentru a testa o logica simplificata pe un subset de date. A fost ideal pentru a intelege comportamentul functiei de similaritate si cum sa structurez logica de grupare.
 
-Fișierul principal, matcher.py, conține implementarea finală:
+### 3. Prelucrarea si deduplicarea
 
-- Am selectat doar coloanele cu o valoare informativă și un grad decent de completitudine.
+Fisierul principal, `matcher.py`, contine implementarea finala:
 
+- Am selectat doar coloanele cu o valoare informativa si un grad decent de completitudine.
 - Am aplicat preprocesare (normalizare text, eliminare caractere inutile etc.).
-
-- Am definit o funcție de similarity_score care combină scoruri fuzzy (folosind rapidfuzz) cu egalități exacte.
-
-- Gruparea entităților se face pe baza domeniului web și a scorului total, într-o manieră eficientă.
+- Am definit o functie de `similarity_score` care combina scoruri fuzzy (folosind `rapidfuzz`) cu egalitati exacte.
+- Gruparea entitatilor se face pe baza domeniului web si a scorului total, intr-o maniera eficienta.
 
 ## 📊 Rezultate
 
-- Datele au fost grupate în funcție de website_domain și apoi comparate pereche cu pereche folosind un scor euristic.
-
-- S-a obținut un fișier CSV cu ID-ul grupului și datele companiei pentru entitățile considerate duplicate.
-
-- Codul este ușor de extins pentru scoruri personalizate sau alte metode de comparare.
+- Datele au fost grupate in functie de `website_domain` si apoi comparate pereche cu pereche folosind un scor euristic.
+- S-a obtinut un fisier CSV cu ID-ul grupului si datele companiei pentru entitatile considerate duplicate.
+- Codul este usor de extins pentru scoruri personalizate sau alte metode de comparare.
 
 ## 🧪 Cum rulez?
 
-Asigură-te că ai instalat dependințele într-un mediu virtual:
+Asigura-te ca ai instalat dependintele intr-un mediu virtual:
+pip install pandas pyarrow rapidfuzz
 
-__pip install pandas pyarrow rapidfuzz__
-
-Apoi rulează scriptul principal:
-
-__python src/matcher.py__
-
-
+Apoi ruleaza scriptul principal:
+python src/matcher.py
 
