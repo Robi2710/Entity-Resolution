@@ -1,12 +1,13 @@
-# Entity Resolution
+# 📁 Entity Resolution
+## 🎯 Obiectiv principal
 Obiectivul principal a fost identificarea și gruparea companiilor duplicate, folosind un algoritm bazat pe similaritatea textuală și reguli euristice aplicate pe coloane esențiale precum nume, domeniu, email, telefon și adresă.
 
-## Gândirea din spatele soluției
-### Explorare initiala
+## 🧠 Gândirea din spatele soluției
+### 1. Explorare initiala
 Primul pas a fost să înțeleg structura datelor, așa că am creat scriptul file_reader.py pentru a vedea mai usor coloane si informatii desprea acestea, iar apoi am creat scriptul data_completeness.py, care afișează gradul de completitudine al fiecărei coloane. Acest pas m-a ajutat să decid ce coloane sunt utile pentru procesul de deduplicare.
-### Experimentare pe subset
+### 2. Experimentare pe subset
 Am creat apoi un fișier mic — mini_example.py — pentru a testa o logică simplificată pe un subset de date. A fost ideal pentru a înțelege comportamentul funcției de similaritate și cum să structurez logica de grupare.
-### Prelucrarea și deduplicarea
+### 3. Prelucrarea și deduplicarea
 
 Fișierul principal, matcher.py, conține implementarea finală:
 
@@ -18,7 +19,7 @@ Fișierul principal, matcher.py, conține implementarea finală:
 
 - Gruparea entităților se face pe baza domeniului web și a scorului total, într-o manieră eficientă.
 
-### Rezultate
+## 📊 Rezultate
 
 - Datele au fost grupate în funcție de website_domain și apoi comparate pereche cu pereche folosind un scor euristic.
 
@@ -26,7 +27,7 @@ Fișierul principal, matcher.py, conține implementarea finală:
 
 - Codul este ușor de extins pentru scoruri personalizate sau alte metode de comparare.
 
-## Cum rulez?
+## 🧪 Cum rulez?
 
 Asigură-te că ai instalat dependințele într-un mediu virtual:
 
